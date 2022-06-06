@@ -8,7 +8,7 @@
 #include <time.h>
 #include <pthread.h>
 #include "../dijkstra.h"
-#define KEY 1
+#define KEY 1234
 
 void * filosofo(void *);
 void pegar(int, int);

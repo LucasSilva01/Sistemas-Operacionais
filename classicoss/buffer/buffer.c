@@ -8,9 +8,9 @@
 #include <time.h>
 #include <pthread.h>
 #include "../dijkstra.h"
-#define KEY 1
-#define KEY2 2
-#define KEY3 3
+#define KEY 1234
+#define KEY2 4567
+#define KEY3 7899
 //
 // TODO: Definição dos semáforos (variaveis precisam ser globais)
 //
