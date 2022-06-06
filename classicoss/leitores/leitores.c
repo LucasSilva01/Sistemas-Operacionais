@@ -8,6 +8,14 @@
 #include <time.h>
 #include <pthread.h>
 #include "../dijkstra.h"
+#define KEY 1234
+#define KEY2 4567
+
+
+// prototipos das funcoes
+void * leitor(void *);
+void * escritor(void *);
+int gera_rand(int);
 
 // quantidade de leitores lendo
 int readcount = 0;
@@ -16,13 +24,12 @@ int readcount = 0;
 // TODO: Definição dos semáforos (variaveis precisam ser globais)
 //
 
+int mutex;
+int sem;
+
 // dado compartilhado que os leitores e escritores acessarão
 int shared = 0;
 
-// prototipos das funcoes
-void * leitor(void *);
-void * escritor(void *);
-int gera_rand(int);
 
 int main(int argc, char ** argv)
 {
@@ -46,7 +53,9 @@ int main(int argc, char ** argv)
     // TODO: Criação dos semáforos (aqui é quando define seus
     // valores, usando a biblioteca dijkstra.h
     // 
- 
+    mutex = sem_create(KEY, 1);
+    sem = sem_create(KEY2, 1);
+
     // num leitores
     int N_LEITORES = atoi(argv[1]);
     
@@ -86,6 +95,8 @@ int main(int argc, char ** argv)
     //
     // TODO: Excluindo os semaforos (dijkstra.h)
     // 
+    sem_delete(mutex);
+    sem_delete(sem);
 
     // liberando a memoria alocada
     free(tl);
@@ -100,11 +111,20 @@ void * leitor(void * id)
 
     // convertendo o Id do leitor para int
     int i = (int)id;
+    
 
     //
     // TODO: precisa fazer o controle de acesso à entrada do leitor
     //
-    
+    P(mutex);
+    readcount++;
+
+    if (readcount == 1){
+        P(sem);
+    }
+
+    V(mutex);
+
     printf("> Leitor %d tentando acesso\n",i);
 
         // leitor acessando o valor de shared
@@ -114,6 +134,15 @@ void * leitor(void * id)
     //
     // TODO: precisa fazer a saída do leitor e liberação do acesso
     //
+
+    P(mutex);
+    readcount--;
+
+    if(readcount == 0){
+        V(sem);
+    }
+
+    V(mutex);
 
     printf("< Leitor %d liberando acesso\n",i);
 
@@ -129,6 +158,7 @@ void * escritor(void * id)
     //
     // TODO: precisa controlar o acesso do escritor ao recurso
     //
+    P(sem);
     
     printf("+ Escritor %d tentando acesso\n",i);
     
@@ -141,6 +171,7 @@ void * escritor(void * id)
     //
     // TODO: precisa fazer a saída do escritor e liberação do acesso
     //
+    V(sem);
     
     printf("+ Escritor %d saindo\n",i);
 }
