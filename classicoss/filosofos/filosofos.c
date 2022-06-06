@@ -9,10 +9,15 @@
 #include <pthread.h>
 #include "../dijkstra.h"
 
+void * filosofo(void *);
+void pegar(int, int);
+void liberar(int, int);
+int gera_rand(int);
 
 //
 // TODO: Definição dos semáforos (variaveis precisam ser globais)
 //
+int mutex;
 
 // lista quem esta de posse de um chopstick
 int *chopstick_use;
@@ -20,11 +25,7 @@ int *chopstick_use;
 // numero de filosofos
 int N_FILOS;
 
-// prototipos das funcoes
-void * filosofo(void *);
-void pegar(int, int);
-void liberar(int, int);
-int gera_rand(int);
+
 
 int main(int argc, char ** argv)
 {
@@ -60,6 +61,8 @@ int main(int argc, char ** argv)
     // TODO: Criação dos semáforos (aqui é quando define seus
     // valores, usando a biblioteca dijkstra.h
     // 
+
+    mutex = sem_create(1, 1);
  
     // iniciando as threads dos filosofos
     for (i = 0; i < N_FILOS; i++)
@@ -110,6 +113,7 @@ void * filosofo(void * id)
     // TODO: precisa garantir que mais de um filosofo nao pegue o mesmo
     // chopstick simultaneamente
     //
+    P(mutex);
     pegar(i, c1);
     pegar(i, c2);
     
@@ -120,6 +124,7 @@ void * filosofo(void * id)
     // TODO: precisa garantir que os filosofos liberem os chopsticks
     // após usar
     //
+    V(mutex);
     liberar(i, c1);
     liberar(i, c2);
 
