@@ -8,10 +8,16 @@
 #include <time.h>
 #include <pthread.h>
 #include "../dijkstra.h"
-
+#define KEY 1
+#define KEY2 2
+#define KEY3 3
 //
 // TODO: Definição dos semáforos (variaveis precisam ser globais)
 //
+int empty;
+int mutex;
+int full;
+
 
 // ponteiro para a fila do buffer
 int * buffer;
@@ -65,6 +71,11 @@ int main(int argc, char ** argv)
     // valores, usando a biblioteca dijkstra.h
     // 
     
+    mutex = sem_create(KEY, 1);
+    full = sem_create(KEY2, 0);
+    empty = sem_create(KEY3, N_BUFFER);
+    
+    
     // gerando um buffer de N inteiros
     buffer = malloc(N_BUFFER * sizeof(int));
 
@@ -98,6 +109,10 @@ int main(int argc, char ** argv)
     //
     // TODO: Excluindo os semaforos (dijkstra.h)
     // 
+    sem_delete(empty);
+    sem_delete(mutex);
+    sem_delete(full);
+
 
     // liberando a memoria alocada
     free(buffer);
@@ -125,7 +140,8 @@ void * consumer()
         //
         // TODO: precisa bloquear ate que tenha algo a consumir
         //
-        
+
+        P(full);
         printf("- Consumidor entrou em ação!\n");
 
         print_buffer();
@@ -133,6 +149,8 @@ void * consumer()
         //
         // TODO: precisa garantir exclusão mutua ao acessar o buffer
         //
+
+        P(mutex);
 
         printf("\t- Consumidor vai limpar posição %d\n", out);
 
@@ -157,6 +175,8 @@ void * consumer()
         // TODO: liberando o recurso
         //
 
+        V(mutex);
+        V(empty);
         i++;
     }
 }
@@ -177,11 +197,14 @@ void * producer(void * id)
     //
     // TODO: precisa bloquear até que tenha posicao disponível no buffer
     //
+    P(empty);
     printf("> Produtor %d entrou em ação!\n",i);
 
     // 
     // TODO: precisa garantir o acesso exclusivo ao buffer
     //
+
+    P(mutex);
 
     // numero aleatorio de 0 a 99
     produto = gera_rand(100);
@@ -208,6 +231,8 @@ void * producer(void * id)
     //
     // TODO: liberar para o consumidor acessar o buffer
     //
+    V(mutex);
+    V(full);
 }
 
 int gera_rand(int limit)
