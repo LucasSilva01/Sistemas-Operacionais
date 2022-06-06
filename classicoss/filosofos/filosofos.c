@@ -8,6 +8,7 @@
 #include <time.h>
 #include <pthread.h>
 #include "../dijkstra.h"
+#define KEY 1
 
 void * filosofo(void *);
 void pegar(int, int);
@@ -62,7 +63,7 @@ int main(int argc, char ** argv)
     // valores, usando a biblioteca dijkstra.h
     // 
 
-    mutex = sem_create(1, 1);
+    mutex = sem_create(KEY, 1);
  
     // iniciando as threads dos filosofos
     for (i = 0; i < N_FILOS; i++)
